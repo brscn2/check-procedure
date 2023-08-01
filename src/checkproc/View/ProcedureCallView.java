@@ -1,6 +1,8 @@
 package checkproc.View;
 
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
@@ -32,9 +34,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 
 public class ProcedureCallView extends JPanel {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JTextField procedureOneField;
 	private JTextField procedureTwoField;
 	
@@ -42,6 +49,9 @@ public class ProcedureCallView extends JPanel {
 	private JButton callProcedureButton;
 	private JButton resultButton;
 	private JButton backButton;
+	
+	private JRadioButton lineByLineRadio;
+	private JRadioButton allAtOnceRadio;
 	
 	private JLabel parameterLabel;
 	
@@ -69,6 +79,9 @@ public class ProcedureCallView extends JPanel {
 		callProcedureButton = new JButton("Call procedures");
         resultButton = new JButton("See Results");
 		backButton = new JButton("<- Back");
+		
+		lineByLineRadio = new JRadioButton("Line by line");
+		allAtOnceRadio = new JRadioButton("All at once");
 		
 		// space between fields
         Insets fieldsInset = new Insets(0, 0, 10, 0);
@@ -116,28 +129,29 @@ public class ProcedureCallView extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
 
-
         add(fileChooseButton, gridBagConstraints);
         
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-
         
-        add(callProcedureButton, gridBagConstraints);
+        JPanel buttonGroupPanel = new JPanel();
+        ButtonGroup parameterCallTypeGroup = new ButtonGroup();
+        parameterCallTypeGroup.add(lineByLineRadio);
+        parameterCallTypeGroup.add(allAtOnceRadio);
+        buttonGroupPanel.add(lineByLineRadio);
+        buttonGroupPanel.add(allAtOnceRadio);
+        add(buttonGroupPanel);
         
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = fieldsInset;
         
-        add(parameterLabel, gridBagConstraints);
+        add(callProcedureButton, gridBagConstraints);
         
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
         
         add(resultButton, gridBagConstraints);
-//		JScrollPane scrollPane = new JScrollPane();
-//		scrollPane.setPreferredSize(new Dimension(500, 80));
-//		add(scrollPane);
 		
 	}
 	
@@ -155,6 +169,14 @@ public class ProcedureCallView extends JPanel {
 	
 	public void backButton(ActionListener actionListener) {
 		backButton.addActionListener(actionListener);
+	}
+	
+	public void lineByLine(ActionListener actionListener) {
+		lineByLineRadio.addActionListener(actionListener);
+	}
+	
+	public void allAtOnce(ActionListener actionListener) {
+		allAtOnceRadio.addActionListener(actionListener);
 	}
 	
 	public void parameterLabel(String parameters) {

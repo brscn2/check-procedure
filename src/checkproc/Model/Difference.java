@@ -11,22 +11,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Difference {
-	private List<String> differenceStrings;
 	
-	public Difference() {
-		differenceStrings = new ArrayList<String>();
-	}
+	private Difference() {}
 	
-	public List<String> compareProcedureCalls(CallableStatement cs1, CallableStatement cs2) throws SQLException {		
+	public static List<String> compareProcedureCalls(CallableStatement cs1, CallableStatement cs2) throws SQLException {
+		List<String> differenceStrings = new ArrayList<>();
+		
 		boolean status1 = cs1.execute(), status2 = cs2.execute();
 		
 		int frameIndex = 1;
 		while (status1 & status2) {
 			ResultSet rs1 = cs1.getResultSet();
 			ResultSet rs2 = cs2.getResultSet();
-			
-			// TESTING
-			compareResultSets(rs1, rs2, frameIndex);
+			compareResultSets(rs1, rs2, frameIndex, differenceStrings);
 			frameIndex++;
 			status1 = cs1.getMoreResults();
 			status2 = cs2.getMoreResults();
@@ -46,16 +43,13 @@ public class Difference {
 			} while (status2);
 		}
 		
-		return this.differenceStrings;
+		return differenceStrings;
 	}
 	
-	private void compareResultSets(ResultSet rs1, ResultSet rs2, int frameIndex) throws SQLException {
+	private static void compareResultSets(ResultSet rs1, ResultSet rs2, int frameIndex, List<String> differenceStrings) throws SQLException {
 		// TODO Optimize it using hashmap
-		/*
-		 * ASSUME THAT COLUMNS CAN ADDED OR DROPPED FROM THE END
-		 */
 		
-		List<String> commonColumns = compareColumns(rs1, rs2, frameIndex);
+		List<String> commonColumns = compareColumns(rs1, rs2, frameIndex, differenceStrings);
 		
 		boolean status1 = rs1.next(), status2 = rs2.next();
 		long rowIndex = 1;
@@ -109,123 +103,6 @@ public class Difference {
 			
 			differenceStrings.add(frameIndex + ". frame, " + nonExistingRowNumber + " kadar satir yalnizca ikinci prosedurde var.");
 		}
-		
-		
-//		long[] diffs;
-//		
-//		if (columnCount1 < columnCount2) {
-//			long rs2RowCount = 0;
-//			diffs = new long[columnCount2];
-//			
-//			boolean status1 = rs1.next(), status2 = rs2.next();
-//			
-//			while (status1 && status2) {
-//				for (int i = 1; i <= columnCount1; i++) {
-//					if (!rs1.getObject(i).equals(rs2.getObject(i))) {
-//						diffs[i - 1]++;
-//					}
-//				}
-//				
-//				status1 = rs1.next();
-//				status2 = rs2.next();
-//				rs2RowCount++;
-//			}
-//			
-//			if (status1 && !status2)	
-//				do {
-//					for (int i = 1; i <= columnCount1; i++) {
-//						diffs[i - 1]++;
-//					}
-//					
-//					status1 = rs1.next();
-//				} while (status1);
-//			else if (!status1 && status2)
-//				do {
-//					for (int i = 1; i <= columnCount1; i++) {
-//						diffs[i - 1]++;
-//					}
-//					
-//					rs2RowCount++;
-//					status2 = rs2.next();
-//				} while (status2);
-//				
-//			for (int i = columnCount1 + 1; i <= columnCount2; i++) {
-//				diffs[i - 1] = rs2RowCount;
-//			}
-//		}
-//		else if (columnCount1 > columnCount2) {
-//			long rs1RowCount = 0;
-//			diffs = new long[columnCount1];
-//			
-//			boolean status1 = rs1.next(), status2 = rs2.next();			
-//			while (status1 && status2) {
-//				for (int i = 1; i <= columnCount2; i++) {
-//					if (!rs1.getObject(i).equals(rs2.getObject(i))) {
-//						diffs[i - 1]++;
-//					}
-//				}
-//				
-//				status1 = rs1.next();
-//				status2 = rs2.next();
-//				rs1RowCount++;
-//			} 
-//			
-//			if (status1 && !status2)	
-//				do {
-//					for (int i = 1; i <= columnCount2; i++) {
-//						diffs[i - 1]++;
-//					}
-//					
-//					rs1RowCount++;
-//					status1 = rs1.next();
-//				} while (status1);
-//			else if (!status1 && status2)
-//				do {
-//					for (int i = 1; i <= columnCount2; i++) {
-//						diffs[i - 1]++;
-//					}
-//					
-//					status2 = rs2.next();
-//				} while (status2);
-//				
-//			for (int i = columnCount2 + 1; i <= columnCount1; i++) {
-//				diffs[i - 1] = -1 * rs1RowCount;
-//			}
-//		}
-//		else {
-//			diffs = new long[columnCount1];
-//			
-//			boolean status1 = rs1.next(), status2 = rs2.next();
-//			while (status1 & status2) {
-//				for (int i = 1; i <= columnCount1; i++) {
-//					if (!rs1.getObject(i).equals(rs2.getObject(i))) {
-//						diffs[i - 1]++;
-//					}
-//				}
-//				
-//				status1 = rs1.next();
-//				status2 = rs2.next();
-//			}
-//			
-//			if (status1 && !status2)	
-//				do {
-//					for (int i = 1; i <= columnCount1; i++) {
-//						diffs[i - 1]++;
-//					}
-//					
-//					status1 = rs1.next();
-//				} while (status1);
-//			else if (!status1 && status2)
-//				do {
-//					for (int i = 1; i <= columnCount1; i++) {
-//						diffs[i - 1]++;
-//					}
-//					
-//					status2 = rs2.next();
-//				} while (status2);
-//		}
-//		
-//		return diffs;
 	}
 	
 	/*
@@ -233,13 +110,13 @@ public class Difference {
 	 * Returns the common column names in both resultSets.
 	 */
 	
-	private List<String> compareColumns(ResultSet rs1, ResultSet rs2, int frameIndex) throws SQLException {
+	private static List<String> compareColumns(ResultSet rs1, ResultSet rs2, int frameIndex, List<String> differenceStrings) throws SQLException {
 		ResultSetMetaData rsmd1 = rs1.getMetaData();
 		ResultSetMetaData rsmd2 = rs2.getMetaData();
-		int columnCount1 = rs1.getMetaData().getColumnCount();
-		int columnCount2 = rs2.getMetaData().getColumnCount();
+		int columnCount1 = rsmd1.getColumnCount();
+		int columnCount2 = rsmd2.getColumnCount();
 		
-		// Assume column names are unique (Maybe change this?)
+		// Assume column names are unique within the same table (Maybe change this?)
 		Set<String> colNameSet1 = new HashSet<>();
 		Set<String> colNameSet2 = new HashSet<>();
 		List<String> commonColNameList = new ArrayList<>();
@@ -262,7 +139,6 @@ public class Difference {
 		List<String> onlyInSet1 = colNameSet1.stream().filter(e -> 
 			!colNameSet2.contains(e)).collect(Collectors.toList());
 		
-		// Maybe use stringbuilder to optimize
 		for (String col : onlyInSet1) {
 			differenceStrings.add(frameIndex + ". frame, column" + col + " yalnizca birinci prosedur ciktisinda var.");
 		}

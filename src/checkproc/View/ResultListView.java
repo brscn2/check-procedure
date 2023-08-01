@@ -12,6 +12,10 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 public class ResultListView extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JList<String> list;
 	private DefaultListModel<String> listModel;
 	

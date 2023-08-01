@@ -22,32 +22,9 @@ public class Database {
 	
 	private Connection conn = null;
 	
-	public Database(String userid, String password, String url) throws SQLException {
-		/*
-		Properties sysProps = System.getProperties();
-		String drivers = "com.sybase.jdbc4.jdbc.SybDriver";
-		String oldDrivers =
-		sysProps.getProperty("jdbc.drivers");
-		if (oldDrivers != null)
-		   drivers += ":" + oldDrivers;
-		 sysProps.put("jdbc.drivers", drivers.toString());
-		*/
-		
-		try {
-            // The newInstance() call is a work around for some
-            // broken Java implementations
-
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-		
-		Properties props = new Properties();
-		props.put("user", userid);
-		props.put("password", password);
-	
-		 //props.put("proxy", "localhost:port");
-		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + url, props);
+	public Database(String driverClassName, String username, String password, String url) throws SQLException {
+		// TODO: FOR TESTING (Normally input driverClassName from UI)
+		conn = DAOFactory.getInstance(driverClassName, url, username, password).getConnection();
         System.out.println("Connected to database");
 	}
 	
@@ -58,15 +35,13 @@ public class Database {
 		DatabaseMetaData dbmd = getDatabaseMetadata();
 		ResultSet procedureColumns = dbmd.getProcedureColumns(null, null, procHandle, null);
 		
+		// TODO REMOVE - FOR TESTING
 		System.out.print("Calling procedure: " + procHandle + "(");
 		for (String p : parameters)
 			System.out.print(p);
 		System.out.println(")");
 		
 		setParameters(procStmt, procedureColumns, parameters);
-		
-		// Call the procedure
-		// Boolean value used to check if query or update
 
 		return procStmt;
 	}
@@ -77,7 +52,7 @@ public class Database {
 	
 	
 	/*
-	 *	Prepare the procedure name that was inputted with ( and ? based on the parameter count
+	 *	Prepare the procedure name that was inputed with ( and ? based on the parameter count
 	 */
 	private String prepareProcedureHandle(String procHandle, int parameterCount) {
 		StringBuilder sb = new StringBuilder(procHandle); 

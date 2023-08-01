@@ -6,7 +6,11 @@ import java.awt.event.ActionListener;
 
 public class DatabaseInfoView extends JPanel {
 
-    private JTextField useridField;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JTextField useridField;
     private JTextField passwordField;
     private JTextField urlField;
 

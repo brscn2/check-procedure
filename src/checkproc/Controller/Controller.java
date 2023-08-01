@@ -24,11 +24,15 @@ import checkproc.Model.Difference;
 
 public class Controller {
 	private Database database;
-	private Difference difference;
+	
+	private BufferedReader parameterFileReader;
+	
 	private DatabaseInfoView dbInfoView;
 	private ProcedureCallView procCallView;
 	private ResultListView resultListView;
-	private BufferedReader parameterFileReader;
+	
+	// TRUE: LineByLine, FALSE: AllAtOnce
+	private boolean isLineByLine; 
 	
 	public Controller(DatabaseInfoView dbInfoView, ProcedureCallView procCallView, ResultListView resultListView) {
 		this.dbInfoView = dbInfoView;
@@ -46,7 +50,8 @@ public class Controller {
 			// Validate by trying to get a connection
 			System.out.println("TRYING TO LOGIN");
 			try {
-				database = new Database(userid, password, url);
+				// TODO : Get driverClassName from UI
+				database = new Database("com.mysql.cj.jdbc.Driver", userid, password, url);
 			} catch (SQLException exception) {
 				JOptionPane.showMessageDialog(this.dbInfoView, "Could not connect to the database, check the given info or console for the error in detail.", "Connection Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -65,13 +70,12 @@ public class Controller {
 		 */
 		this.procCallView.selectFile(e -> {
 			// TODO REFACTOR IN TO CLASS MAYBE?
-			// TODO Validate file
 			final JFileChooser fc = new JFileChooser();
 			int returnVal = fc.showOpenDialog(this.procCallView);
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				File parameterFile = fc.getSelectedFile();
-				if (isExtensionValid(parameterFile.getName())) {
+				if (isExtensionValid(parameterFile.getName())) { // validate file extension (txt)
 					try {
 						parameterFileReader = new BufferedReader(new FileReader(parameterFile));
 					} catch(FileNotFoundException exception) {
@@ -88,48 +92,102 @@ public class Controller {
 			}
 		});
 		
+		
+		// TRUE: LineByLine, FALSE: AllAtOnce
+		this.procCallView.lineByLine(e -> {
+			this.isLineByLine = true;
+		});
+		
+		this.procCallView.allAtOnce(e -> {
+			this.isLineByLine = false;
+		});
+		
 		/*
 		 * Adding functionality to the call procedure button.
 		 */
 		this.procCallView.callProcedure(e -> {
 			this.resultListView.resetList();
-			this.difference = new Difference();
 			
-			String procedureOne = this.procCallView.getProcedureOne().trim();
-			String procedureTwo = this.procCallView.getProcedureTwo().trim();
-			
-			String parameterLine = null;
-			try {
-				parameterLine = parameterFileReader.readLine();
-				// Checks end of file, maybe moved elsewhere or extracted to a method
-				if (parameterLine == null) {
-					parameterFileReader.close();
-					JOptionPane.showMessageDialog(this.procCallView, "There are no parameters left in the file.", "Procedure Call Error",
-	                        JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-			} catch (IOException exception) {
-				exception.printStackTrace();
-				JOptionPane.showMessageDialog(this.procCallView, "Could not read the parameters from the file. (IOException)", "Procedure Call Error",
-                        JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			
-			
-			this.procCallView.parameterLabel(parameterLine);
-			String[] parametersArray = parameterLine.split(",");
-			try {
-				CallableStatement cs1 = this.database.callProcedure(procedureOne, parametersArray);
-				CallableStatement cs2 = this.database.callProcedure(procedureTwo, parametersArray);
-				List<String> result = this.difference.compareProcedureCalls(cs1, cs2);
-				this.resultListView.setListModel(result);
-			} catch(SQLException exception) {
-				JOptionPane.showMessageDialog(this.procCallView, "Could not call the procedures, check your info or console for the error in detail.", "Procedure Call Error",
-                        JOptionPane.ERROR_MESSAGE);
-				exception.printStackTrace();
-				return;
-			}
+			if (isLineByLine)
+				this.resultListView.setListModel(getLineByLineResult());
+			else
+				this.resultListView.setListModel(getAllAtOnceResult());
 		});
+	}
+	
+	private List<String> getAllAtOnceResult() {
+		String procedureOne = this.procCallView.getProcedureOne().trim();
+		String procedureTwo = this.procCallView.getProcedureTwo().trim();
+		List<String> result = new ArrayList<String>();
+		this.procCallView.parameterLabel("All at once");
+		
+		try {
+			String parameterLine = null;
+			while ((parameterLine = parameterFileReader.readLine()) != null) {
+				String[] parametersArray = parameterLine.split(",");
+				
+				result.add("-- (" + parameterLine + ")  --");
+				try {
+					CallableStatement cs1 = this.database.callProcedure(procedureOne, parametersArray);
+					CallableStatement cs2 = this.database.callProcedure(procedureTwo, parametersArray);
+					result.addAll(Difference.compareProcedureCalls(cs1, cs2));
+				} catch(SQLException exception) {
+					JOptionPane.showMessageDialog(this.procCallView, "Could not call the procedures, check your info or console for the error in detail.", "Procedure Call Error",
+		                      	JOptionPane.ERROR_MESSAGE);
+					exception.printStackTrace();
+					return null;	
+				}
+			}	
+			
+			parameterFileReader.close();
+		} catch (IOException exception) {
+			exception.printStackTrace();
+			JOptionPane.showMessageDialog(this.procCallView, "Could not read the parameters from the file. (IOException)", "Procedure Call Error",
+                        JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
+		
+		return result;
+	}
+	
+	private List<String> getLineByLineResult() {
+		String procedureOne = this.procCallView.getProcedureOne().trim();
+		String procedureTwo = this.procCallView.getProcedureTwo().trim();
+		
+
+		String parameterLine = null;
+		try {
+			parameterLine = parameterFileReader.readLine();
+			// Checks end of file, maybe moved elsewhere or extracted to a method
+			if (parameterLine == null) {
+				parameterFileReader.close();
+				this.procCallView.parameterLabel(null);
+				JOptionPane.showMessageDialog(this.procCallView, "There are no parameters left in the file.", "Procedure Call Error",
+						JOptionPane.ERROR_MESSAGE);
+				return null;
+			}
+		} catch (IOException exception) {
+			exception.printStackTrace();
+			JOptionPane.showMessageDialog(this.procCallView, "Could not read the parameters from the file. (IOException)", "Procedure Call Error",
+                        JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
+			
+		this.procCallView.parameterLabel(parameterLine);
+		String[] parametersArray = parameterLine.split(",");
+		try {
+			CallableStatement cs1 = this.database.callProcedure(procedureOne, parametersArray);
+			CallableStatement cs2 = this.database.callProcedure(procedureTwo, parametersArray);
+			List<String> result = new ArrayList<>();
+			result.add("-- (" + parameterLine + ")  --");
+			result.addAll(Difference.compareProcedureCalls(cs1, cs2));
+			return result;
+		} catch(SQLException exception) {
+			JOptionPane.showMessageDialog(this.procCallView, "Could not call the procedures, check your info or console for the error in detail.", "Procedure Call Error",
+                      	JOptionPane.ERROR_MESSAGE);
+			exception.printStackTrace();
+			return null;	
+		}
 	}
 	
 	private boolean isExtensionValid(String filename) {
