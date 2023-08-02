@@ -21,10 +21,16 @@ public class Database {
 	// Connect to db and get the resultset
 	
 	private Connection conn = null;
+	private String databaseName;
 	
 	public Database(String driverClassName, String username, String password, String url) throws SQLException {
-		// TODO: FOR TESTING (Normally input driverClassName from UI)
 		conn = DAOFactory.getInstance(driverClassName, url, username, password).getConnection();
+		databaseName = getDatabaseName(url);
+		/*
+		 * FOR TESTING FETCHING PROCEDURES FROM DATABASE
+		 */
+
+		
         System.out.println("Connected to database");
 	}
 	
@@ -132,11 +138,26 @@ public class Database {
 		                break;
 		
 		            case Types.TIMESTAMP:
-		            	procStmt.setTimestamp(parameterIndex, Timestamp.valueOf(parameters[parameterIndex - 1]));                
+		            	procStmt.setTimestamp(parameterIndex, Timestamp.valueOf(parameters[parameterIndex - 1]));            
 		                break;
 				}
 				parameterIndex++;
 			}
 		}
+	}
+	
+	private String getDatabaseName(String url) {
+		return url.substring(url.lastIndexOf('/') + 1);
+	}
+	
+	public List<String> getProcedures() throws SQLException {
+		List<String> proceduresList = new ArrayList<String>();
+		DatabaseMetaData dbmd = getDatabaseMetadata();
+		ResultSet procedures = dbmd.getProcedures(databaseName, null, null);
+		while (procedures.next()) {
+			proceduresList.add(procedures.getString(3));
+		}
+		
+		return proceduresList;
 	}
 }

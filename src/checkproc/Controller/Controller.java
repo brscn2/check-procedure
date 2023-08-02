@@ -51,8 +51,10 @@ public class Controller {
 			// Validate by trying to get a connection
 			System.out.println("TRYING TO LOGIN");
 			try {
-				// TODO : Get driverClassName from UI
 				database = new Database(driverClassName, userid, password, url);
+				
+				// Try to populate the comboboxes with the procedure names
+				this.procCallView.setComboBoxModel(this.database.getProcedures().toArray());
 			} catch (SQLException exception) {
 				JOptionPane.showMessageDialog(this.dbInfoView, "Could not connect to the database, check the given info or console for the error in detail.", "Connection Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -162,7 +164,6 @@ public class Controller {
 			// Checks end of file, maybe moved elsewhere or extracted to a method
 			if (parameterLine == null) {
 				parameterFileReader.close();
-				this.procCallView.parameterLabel(null);
 				JOptionPane.showMessageDialog(this.procCallView, "There are no parameters left in the file.", "Procedure Call Error",
 						JOptionPane.ERROR_MESSAGE);
 				return null;
@@ -174,7 +175,6 @@ public class Controller {
 			return null;
 		}
 			
-		this.procCallView.parameterLabel(parameterLine);
 		String[] parametersArray = parameterLine.split(",");
 		try {
 			CallableStatement cs1 = this.database.callProcedure(procedureOne, parametersArray);
