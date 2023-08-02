@@ -54,7 +54,8 @@ public class Controller {
 				database = new Database(driverClassName, userid, password, url);
 				
 				// Try to populate the comboboxes with the procedure names
-				this.procCallView.setComboBoxModel(this.database.getProcedures().toArray());
+				this.procCallView.setComboBoxModelOne(this.database.getProcedures());
+				this.procCallView.setComboBoxModelTwo(this.database.getProcedures());
 			} catch (SQLException exception) {
 				JOptionPane.showMessageDialog(this.dbInfoView, "Could not connect to the database, check the given info or console for the error in detail.", "Connection Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -67,6 +68,20 @@ public class Controller {
 			
 			//this.dbInfoView.reset(true);
 			JOptionPane.showMessageDialog(this.dbInfoView, "Connected to database.", "Connection Info", JOptionPane.INFORMATION_MESSAGE);
+		});
+		
+		this.procCallView.procedureOne(e -> {
+			String procOneInput = this.procCallView.getProcedureOne();
+
+			if (e.getActionCommand().toString().equals("comboBoxChanged") && procOneInput.length() > 3)
+				this.procCallView.setComboBoxModelOne(this.database.getProcedureByPattern(procOneInput));
+		});
+		
+		this.procCallView.procedureTwo(e -> {
+			//System.out.println(e.toString());
+			String procTwoInput = this.procCallView.getProcedureOne();
+			if (e.getActionCommand().toString().equals("comboBoxChanged") && procTwoInput.length() > 3)
+				this.procCallView.setComboBoxModelTwo(this.database.getProcedureByPattern(procTwoInput));
 		});
 		
 		/*

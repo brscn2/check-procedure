@@ -92,6 +92,8 @@ public class ProcedureCallView extends JPanel {
 		
 		procedureOneBox = new JComboBox<Object>();
 		procedureTwoBox = new JComboBox<Object>();
+		procedureOneBox.setEditable(true);
+		procedureTwoBox.setEditable(true);
 		
 //		procedureOneField = new JTextField(25);
 //		procedureTwoField = new JTextField(25);
@@ -145,8 +147,19 @@ public class ProcedureCallView extends JPanel {
 		allAtOnceRadio.addActionListener(actionListener);
 	}
 	
-	public void setComboBoxModel(Object[] content) {
+	public void procedureOne(ActionListener actionListener) {
+		procedureOneBox.addActionListener(actionListener);
+	}
+	
+	public void procedureTwo(ActionListener actionListener) {
+		procedureTwoBox.addActionListener(actionListener);
+	}
+	
+	public void setComboBoxModelOne(Object[] content) {
 		procedureOneBox.setModel(new DefaultComboBoxModel<Object>(content));
+	}
+	
+	public void setComboBoxModelTwo(Object[] content) {
 		procedureTwoBox.setModel(new DefaultComboBoxModel<Object>(content));
 	}
 	

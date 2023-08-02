@@ -12,8 +12,11 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 
 
@@ -22,14 +25,21 @@ public class Database {
 	
 	private Connection conn = null;
 	private String databaseName;
+	private Set<String> proceduresSet;
 	
 	public Database(String driverClassName, String username, String password, String url) throws SQLException {
 		conn = DAOFactory.getInstance(driverClassName, url, username, password).getConnection();
 		databaseName = getDatabaseName(url);
 		/*
-		 * FOR TESTING FETCHING PROCEDURES FROM DATABASE
+		 * FETCHING PROCEDURES FROM DATABASE
 		 */
 
+		proceduresSet = new HashSet<String>();
+		DatabaseMetaData dbmd = getDatabaseMetadata();
+		ResultSet procedures = dbmd.getProcedures(databaseName, null, null);
+		while (procedures.next()) {
+			proceduresSet.add(procedures.getString(3));
+		}
 		
         System.out.println("Connected to database");
 	}
@@ -56,6 +66,17 @@ public class Database {
 		return conn.getMetaData();
 	}
 	
+	public Object[] getProcedures() {
+		return proceduresSet.toArray();
+	}
+	
+	/*
+	 * TODO: Optimize using pattern searching algorithm (Knuth–Morris–Pratt algorithm)
+	 */
+	
+	public Object[] getProcedureByPattern(String input) {
+		return proceduresSet.stream().filter(proc -> proc.startsWith(input)).toArray();
+	}
 	
 	/*
 	 *	Prepare the procedure name that was inputed with ( and ? based on the parameter count
@@ -138,7 +159,7 @@ public class Database {
 		                break;
 		
 		            case Types.TIMESTAMP:
-		            	procStmt.setTimestamp(parameterIndex, Timestamp.valueOf(parameters[parameterIndex - 1]));            
+		            	procStmt.setTimestamp(parameterIndex, Timestamp.valueOf(parameters[parameterIndex - 1]));         
 		                break;
 				}
 				parameterIndex++;
@@ -150,14 +171,4 @@ public class Database {
 		return url.substring(url.lastIndexOf('/') + 1);
 	}
 	
-	public List<String> getProcedures() throws SQLException {
-		List<String> proceduresList = new ArrayList<String>();
-		DatabaseMetaData dbmd = getDatabaseMetadata();
-		ResultSet procedures = dbmd.getProcedures(databaseName, null, null);
-		while (procedures.next()) {
-			proceduresList.add(procedures.getString(3));
-		}
-		
-		return proceduresList;
-	}
 }
