@@ -13,6 +13,7 @@ public class DatabaseInfoView extends JPanel {
 	private JTextField useridField;
     private JTextField passwordField;
     private JTextField urlField;
+    private JTextField driverClassNameField;
 
     private JButton loginButton;
     private JButton callProceduresButton;
@@ -21,10 +22,12 @@ public class DatabaseInfoView extends JPanel {
 
         JLabel useridLabel = new JLabel("User ID: ");
         JLabel passwordLabel = new JLabel("Password: ");
-        JLabel urlLabel = new JLabel("URL (host:port/database)");
+        JLabel driverClassNameLabel = new JLabel("Driver Class Name");
+        JLabel urlLabel = new JLabel("URL (jdbc:<db-type>:<host>:<port>/<db-name>)");
 
         useridField = new JTextField(25);
         passwordField = new JTextField(25);
+        driverClassNameField = new JTextField(25);
         urlField = new JTextField(25);
 
         loginButton = new JButton("Log in");
@@ -68,21 +71,31 @@ public class DatabaseInfoView extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         
-        add(urlLabel, gridBagConstraints);
+        add(driverClassNameLabel, gridBagConstraints);
         
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         
-        add(urlField, gridBagConstraints);
+        add(driverClassNameField, gridBagConstraints);
         
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
+        
+        add(urlLabel, gridBagConstraints);
+        
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        
+        add(urlField, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.insets = buttonInset;
         
         add(loginButton, gridBagConstraints);
         
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.insets = buttonInset;
         
         add(callProceduresButton, gridBagConstraints);
@@ -95,6 +108,10 @@ public class DatabaseInfoView extends JPanel {
 
     public String getPassword() {
         return passwordField.getText();
+    }
+    
+    public String getDriverClassName() {
+    	return driverClassNameField.getText();
     }
 
     public String getURL() {

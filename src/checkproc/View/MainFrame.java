@@ -26,6 +26,8 @@ public class MainFrame extends JFrame {
 		DatabaseInfoView dbInfoView = new DatabaseInfoView();
 		ProcedureCallView procCallView = new ProcedureCallView();
 		ResultListView resultListView = new ResultListView();
+		ProcedureCallTabbed procCallTabbed = new ProcedureCallTabbed(procCallView, resultListView);
+		
 		setLayout(cardLayout);
 		
 		// initialize user controller
@@ -33,22 +35,14 @@ public class MainFrame extends JFrame {
 		
 		// add the views for dbInfo and procCall
 		add(dbInfoView, "database info");
-		add(procCallView, "procedure call");
-		add(resultListView, "result list");
+		add(procCallTabbed, "procedure call");
+		//add(resultListView, "result list");
 		
 		// switch to procedure call view after login
 		dbInfoView.callProcedures(e -> cardLayout.show(MainFrame.this.getContentPane(), "procedure call"));
+		procCallTabbed.backButton(e -> cardLayout.show(MainFrame.this.getContentPane(), "database info"));
 		
-		// back button to login page
-		procCallView.backButton(e -> cardLayout.show(MainFrame.this.getContentPane(), "database info"));
-		
-		// see results
-		procCallView.resultButton(e -> cardLayout.show(MainFrame.this.getContentPane(), "result list"));
-		
-		// back button to procedure call page
-		resultListView.backButton(e -> cardLayout.show(MainFrame.this.getContentPane(), "procedure call"));
-		
-		int FRAME_WIDTH = 1200;
+		int FRAME_WIDTH = 650;
 		int FRAME_HEIGHT = 700;
 		
 		setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -56,10 +50,6 @@ public class MainFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 		//setBounds(100, 100, 450, 300);
-		
-		//contentPane = new JPanel();
-		//contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		//setContentPane(contentPane);
 	}
 
 }

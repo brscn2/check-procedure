@@ -19,12 +19,10 @@ public class ResultListView extends JPanel {
 	private JList<String> list;
 	private DefaultListModel<String> listModel;
 	
-	private JButton backButton;
 	
 	public ResultListView() {
 		super(new BorderLayout());
 		
-		backButton = new JButton("<- Back");
 		
 		listModel = new DefaultListModel<String>();
 		list = new JList<String>(listModel);
@@ -34,7 +32,6 @@ public class ResultListView extends JPanel {
 
 		JScrollPane listScrollPane = new JScrollPane(list);
 		
-		add(backButton, BorderLayout.NORTH);
 		add(listScrollPane, BorderLayout.CENTER);
 	}
 	
@@ -46,9 +43,5 @@ public class ResultListView extends JPanel {
 	
 	public void resetList() {
 		listModel.removeAllElements();
-	}
-	
-	public void backButton(ActionListener actionListener) {
-		backButton.addActionListener(actionListener);
 	}
 }

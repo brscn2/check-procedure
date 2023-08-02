@@ -45,13 +45,14 @@ public class Controller {
 		this.dbInfoView.loginDatabase(e -> {
 			String userid = this.dbInfoView.getUserid().trim();
 			String password = this.dbInfoView.getPassword().trim();
+			String driverClassName = this.dbInfoView.getDriverClassName().trim();
 			String url = this.dbInfoView.getURL().trim();
 			
 			// Validate by trying to get a connection
 			System.out.println("TRYING TO LOGIN");
 			try {
 				// TODO : Get driverClassName from UI
-				database = new Database("com.mysql.cj.jdbc.Driver", userid, password, url);
+				database = new Database(driverClassName, userid, password, url);
 			} catch (SQLException exception) {
 				JOptionPane.showMessageDialog(this.dbInfoView, "Could not connect to the database, check the given info or console for the error in detail.", "Connection Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -62,7 +63,8 @@ public class Controller {
 			}
 			
 			
-			this.dbInfoView.reset(true);
+			//this.dbInfoView.reset(true);
+			JOptionPane.showMessageDialog(this.dbInfoView, "Connected to database.", "Connection Info", JOptionPane.INFORMATION_MESSAGE);
 		});
 		
 		/*
@@ -119,7 +121,6 @@ public class Controller {
 		String procedureOne = this.procCallView.getProcedureOne().trim();
 		String procedureTwo = this.procCallView.getProcedureTwo().trim();
 		List<String> result = new ArrayList<String>();
-		this.procCallView.parameterLabel("All at once");
 		
 		try {
 			String parameterLine = null;
