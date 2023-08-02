@@ -75,7 +75,7 @@ public class Database {
 	 */
 	
 	public Object[] getProcedureByPattern(String input) {
-		return proceduresSet.stream().filter(proc -> proc.startsWith(input)).toArray();
+		return proceduresSet.parallelStream().filter(proc -> proc.startsWith(input)).toArray();
 	}
 	
 	/*
